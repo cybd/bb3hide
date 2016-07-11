@@ -1,0 +1,15 @@
+services:
+    ppk.bb3hide.listener:
+        class: ppk\bb3hide\event\listener
+        arguments:
+            - @template
+            - @config
+            - @user
+            - @auth
+            - @dbal.conn
+            - @request
+            - %core.php_ext%
+            - %core.root_path%
+            - @ext.manager
+        tags:
+            - { name: event.listener }
