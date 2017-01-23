@@ -74,8 +74,6 @@ class listener implements EventSubscriberInterface
 		$this->root_path = $root_path;
 		$this->phpbb_extension_manager = $phpbb_extension_manager;
 
-// 		define('ADAPT_HIDE_LIMIT_POSTS', 200);
-
 		$this->is_quickreply=$this->phpbb_extension_manager->is_enabled('boardtools/quickreply') && $this->config['qr_full_quote'] ? true : false;
 	}
 
@@ -87,91 +85,58 @@ class listener implements EventSubscriberInterface
 			'core.user_setup_after'							=> 'bb3hide_init',
 
 			//обработка текста для отображения, после обработки системных бб-кодов /includes/functions_content.php 460 generate_text_for_display() -> /viewtopic.php 1550
-// 			'core.modify_text_for_display_after'		=> 'bb3hide_displaytext',
-			//обработка текста для отображения, до обработки системных бб-кодов /includes/functions_content.php 460 generate_text_for_display() -> /viewtopic.php 1550
-			'core.modify_text_for_display_before'		=> 'bb3hide_displaytext',
+			'core.modify_text_for_display_after'		=> 'bb3hide_displaytext',
 
 			'core.viewtopic_modify_post_data' => 'bb3hide_get_posts_data',
 			'core.mcp_topic_modify_post_data' => 'bb3hide_get_posts_data',
 			'core.search_modify_rowset' => 'bb3hide_get_posts_data',
 			'core.topic_review_modify_post_list' => 'bb3hide_get_posts_data',
-			'core.viewtopic_modify_post_row'            => array('bb3hide_quickreply', -3),
-
-			//изменение кэша бб-кода для парсинга /includes/bbcode.php 408 bbcode_cache_init()
-			'core.bbcode_cache_init_end' => 'bb3hide_cache_init',
+// 			'core.viewtopic_modify_post_row'            => array('bb3hide_quickreply', -3),
 
 			'core.decode_message_before' => 'bb3hide_decode_message',
-			'core.modify_format_display_text_before' => 'bb3hide_preview',
-			'core.submit_pm_before' => 'bb3hide_submit_pm',
+
+			'core.modify_format_display_text_after' => 'bb3hide_preview',
 
 			//изменение бб-кода добавленного через адм. раздел /includes/functions_display.php 1058 display_custom_bbcodes()
 			'core.display_custom_bbcodes_modify_row'				=> 'bb3hide_bbtag',
 		);
 	}
 
-	function bb3hide_quickreply($event)
-	{
-		$post_row = $event['post_row'];
-
-		if ($this->is_quickreply && isset($post_row['DECODED_MESSAGE']))
-		{
-			$hide_search_ary = array();
-			$hide_search_ary[] = '!\[hide\](.*?)\[/hide\]!s';
-			if($this->config['bb3hide_hideplus'])
-			{
-				$hide_search_ary[] = '!\[hide\=([0-9]+)\](.*?)\[/hide\]!s';
-			}
-			if($this->config['bb3hide_uhide'])
-			{
-				$hide_search_ary[] = '!\[uhide\=([-a-zA-Z0-9+.,_ ]+)\](.*?)\[/uhide\]!s';
-			}
-			if($this->config['bb3hide_rhide'])
-			{
-				$hide_search_ary[] = '!\[rhide\=(\-?[0-9]+)\](.*?)\[/rhide\]!s';
-			}
-			if($this->config['bb3hide_ghide'])
-			{
-				$hide_search_ary[] = '!\[ghide\](.*?)\[/ghide\]!s';
-			}
-			if($this->config['bb3hide_ghideplus'])
-			{
-				$hide_search_ary[] = '!\[ghide\=([a-zA-Z0-9-+.,_ ]+)\](.*?)\[/ghide\]!s';
-			}
-
-			$post_row['DECODED_MESSAGE'] = preg_replace($hide_search_ary, $this->user->lang['BB3HIDE_QUOTE'], $post_row['DECODED_MESSAGE']);
-
-			$event['post_row']=$post_row;
-
-		}
-	}
-	function bb3hide_submit_pm($event)
-	{
-		$data=$event['data'];
-		$bbcode_uid=$data['bbcode_uid'];
-
-		$hide_search_ary = array();
-		$hide_search_ary[] = '!\[hide:' . $bbcode_uid . '\](.*?)\[/hide:' . $bbcode_uid . '\]!s';
-		if($this->config['bb3hide_hideplus'])
-		{
-			$hide_search_ary[] = '!\[hide\=(?:[0-9]+):' . $bbcode_uid . '\](.*?)\[/hide:' . $bbcode_uid . '\]!s';
-		}
-		if($this->config['bb3hide_uhide'])
-		{
-			$hide_search_ary[] = '!\[uhide\=(?:[,0-9]+):' . $bbcode_uid . '\](.*?)\[/uhide:' . $bbcode_uid . '\]!s';
-		}
-		if($this->config['bb3hide_ghide'])
-		{
-			$hide_search_ary[] = '!\[ghide:' . $bbcode_uid . '\](.*?)\[/ghide:' . $bbcode_uid . '\]!s';
-		}
-		if($this->config['bb3hide_ghideplus'])
-		{
-			$hide_search_ary[] = '!\[ghide\=(?:[a-zA-Z0-9-+.,_ ]+):' . $bbcode_uid . '\](.*?)\[/ghide:' . $bbcode_uid . '\]!s';
-		}
-		$data['message'] = preg_replace($hide_search_ary, '$1', $data['message']);//'<div class="bb3hide">$1</div>'
-
-		$event['data']=$data;
-
-	}
+// 	function bb3hide_quickreply($event)
+// 	{
+// 		$post_row = $event['post_row'];
+//
+// 		if ($this->is_quickreply && isset($post_row['DECODED_MESSAGE']))
+// 		{
+// 			$hide_search_ary = array();
+// 			$hide_search_ary[] = '!\[hide\](.*?)\[/hide\]!s';
+// 			if($this->config['bb3hide_hideplus'])
+// 			{
+// 				$hide_search_ary[] = '!\[hide\=([0-9]+)\](.*?)\[/hide\]!s';
+// 			}
+// 			if($this->config['bb3hide_uhide'])
+// 			{
+// 				$hide_search_ary[] = '!\[uhide\=([-a-zA-Z0-9+.,_ ]+)\](.*?)\[/uhide\]!s';
+// 			}
+// 			if($this->config['bb3hide_rhide'])
+// 			{
+// 				$hide_search_ary[] = '!\[rhide\=(\-?[0-9]+)\](.*?)\[/rhide\]!s';
+// 			}
+// 			if($this->config['bb3hide_ghide'])
+// 			{
+// 				$hide_search_ary[] = '!\[ghide\](.*?)\[/ghide\]!s';
+// 			}
+// 			if($this->config['bb3hide_ghideplus'])
+// 			{
+// 				$hide_search_ary[] = '!\[ghide\=([a-zA-Z0-9-+.,_ ]+)\](.*?)\[/ghide\]!s';
+// 			}
+//
+// 			$post_row['DECODED_MESSAGE'] = preg_replace($hide_search_ary, $this->user->lang['BB3HIDE_QUOTE'], $post_row['DECODED_MESSAGE']);
+//
+// 			$event['post_row']=$post_row;
+//
+// 		}
+// 	}
 
 	function bb3hide_get_posts_data($event)
 	{
@@ -182,22 +147,20 @@ class listener implements EventSubscriberInterface
 		}
 
 		$rowset=$event['rowset'];
-
 		foreach($rowset as $post_id => $row)
 		{
-			if($row['bbcode_bitfield'] && $row['bbcode_uid'])
+			if($row['bbcode_uid'])
 			{
 				$poster_id = isset($row['user_id']) ? $row['user_id'] : (isset($row['poster_id']) ? $row['poster_id'] : 2);
 				if(!isset($row['forum_id']))
 				{
 					$row['forum_id']=0;
 				}
-				$this->posts_data[$row['bbcode_bitfield']][$row['bbcode_uid']]=array($poster_id, $row['forum_id']);
+				$this->posts_data[$row['bbcode_uid']]=array($poster_id, $row['forum_id']);
 				$this->posts_posters[$poster_id]=$poster_id;
 			}
 
 		}
-
 		$this->posts_posters[$this->user->data['user_id']]=$this->user->data['user_id'];
 
 	}
@@ -206,31 +169,31 @@ class listener implements EventSubscriberInterface
 	{
 		$mode=$this->request->variable('mode', '');
 		$action=$this->request->variable('action', '');
-		$preview=$this->request->variable('preview', '', true);
+// 		$preview=$this->request->variable('preview', '', true);
 
-		if(!$preview && (in_array($mode, array('quote', 'reply')) || $action=='quotepost'))
+		if(/*!$preview && */(in_array($mode, array('quote', 'reply')) || $action=='quotepost'))
 		{
-			$bbcode_uid=$event['bbcode_uid'];
 			$message=$event['message_text'];
 
 			$hide_search_ary = array();
-			$hide_search_ary[] = '!\[hide:' . $bbcode_uid . '\](.*?)\[/hide:' . $bbcode_uid . '\]!s';
+			$hide_search_ary['hide'] = '!<HIDE><s>\[hide\]</s>(.*?)<e>\[/hide\]</e></HIDE>!s';
 			if($this->config['bb3hide_hideplus'])
 			{
-				$hide_search_ary[] = '!\[hide\=([0-9]+):' . $bbcode_uid . '\](.*?)\[/hide:' . $bbcode_uid . '\]!s';
+				$hide_search_ary['hide='] = '!<HIDE( hide="[0-9]+")?><s>\[hide=[0-9]+\]</s>(.*?)<e>\[/hide\]</e></HIDE>!s';
 			}
 			if($this->config['bb3hide_uhide'])
 			{
-				$hide_search_ary[] = '!\[uhide\=([,0-9]+):' . $bbcode_uid . '\](.*?)\[/uhide:' . $bbcode_uid . '\]!s';
+				$hide_search_ary['uhide='] = '!<UHIDE( uhide="[,0-9]+")?><s>\[uhide=([,0-9]+)\]</s>(.*?)<e>\[/uhide\]</e></UHIDE>!s';
 			}
 			if($this->config['bb3hide_ghide'])
 			{
-				$hide_search_ary[] = '!\[ghide:' . $bbcode_uid . '\](.*?)\[/ghide:' . $bbcode_uid . '\]!s';
+				$hide_search_ary['ghide'] = '!<GHIDE><s>\[ghide\]</s>(.*?)<e>\[/ghide\]</e></GHIDE>!s';
 			}
 			if($this->config['bb3hide_ghideplus'])
 			{
-				$hide_search_ary[] = '!\[ghide\=([a-zA-Z0-9-+.,_ ]+):' . $bbcode_uid . '\](.*?)\[/ghide:' . $bbcode_uid . '\]!s';
+				$hide_search_ary['ghide='] = '!<GHIDE( ghide="[,0-9]+")?><s>\[ghide=[,0-9]+\]</s>(.*?)<e>\[/ghide\]</e></GHIDE>!s';
 			}
+
 			$message = preg_replace($hide_search_ary, $this->user->lang['BB3HIDE_QUOTE'], $message);
 
 			$event['message_text']=$message;
@@ -242,50 +205,52 @@ class listener implements EventSubscriberInterface
 	{
 		$text=$event['text'];
 
-		if ($this->is_quickreply)
-		{
+// 		if ($this->is_quickreply)
+// 		{
+// 			$hide_search_ary = array();
+// 			$hide_search_ary[] = '!\[hide\](.*?)\[/hide\]!s';
+// 			if($this->config['bb3hide_hideplus'])
+// 			{
+// 				$hide_search_ary[] = '!\[hide\=([0-9]+)\](.*?)\[/hide\]!s';
+// 			}
+// 			if($this->config['bb3hide_uhide'])
+// 			{
+// 				$hide_search_ary[] = '!\[uhide\=([-a-zA-Z0-9+.,_ ]+)\](.*?)\[/uhide\]!s';
+// 			}
+// 			if($this->config['bb3hide_rhide'])
+// 			{
+// 				$hide_search_ary[] = '!\[rhide\=(\-?[0-9]+)\](.*?)\[/rhide\]!s';
+// 			}
+// 			if($this->config['bb3hide_ghide'])
+// 			{
+// 				$hide_search_ary[] = '!\[ghide\](.*?)\[/ghide\]!s';
+// 			}
+// 			if($this->config['bb3hide_ghideplus'])
+// 			{
+// 				$hide_search_ary[] = '!\[ghide\=([a-zA-Z0-9-+.,_ ]+)\](.*?)\[/ghide\]!s';
+// 			}
+// 		}
+// 		else
+// 		{
 			$hide_search_ary = array();
-			$hide_search_ary[] = '!\[hide\](.*?)\[/hide\]!s';
+			$hide_search_ary['hide'] = '!<div class="adapthide" data-hide-name="hide" data-hide-value="">(.*?)</div>!s';
 			if($this->config['bb3hide_hideplus'])
 			{
-				$hide_search_ary[] = '!\[hide\=([0-9]+)\](.*?)\[/hide\]!s';
+				$hide_search_ary['hide='] = '!<div class="adapthide" data-hide-name="hide" data-hide-value="([0-9]+)">(.*?)</div>!s';
 			}
 			if($this->config['bb3hide_uhide'])
 			{
-				$hide_search_ary[] = '!\[uhide\=([,0-9]+)\](.*?)\[/uhide\]!s';
+				$hide_search_ary['uhide='] = '!<div class="adapthide" data-hide-name="uhide" data-hide-value="([,0-9]+)">(.*?)</div>!s';
 			}
 			if($this->config['bb3hide_ghide'])
 			{
-				$hide_search_ary[] = '!\[ghide\](.*?)\[/ghide\]!s';
+				$hide_search_ary['ghide'] = '!<div class="adapthide" data-hide-name="ghide" data-hide-value="">(.*?)</div>!s';
 			}
 			if($this->config['bb3hide_ghideplus'])
 			{
-				$hide_search_ary[] = '!\[ghide\=([a-zA-Z0-9-+.,_ ]+)\](.*?)\[/ghide\]!s';
+				$hide_search_ary['ghide='] = '!<div class="adapthide" data-hide-name="ghide" data-hide-value="([,0-9]+)">(.*?)</div>!s';
 			}
-		}
-		else
-		{
-			$uid=$event['uid'];
-
-			$hide_search_ary = array();
-			$hide_search_ary[] = '!\[hide:' . $uid . '\](.*?)\[/hide:' . $uid . '\]!s';
-			if($this->config['bb3hide_hideplus'])
-			{
-				$hide_search_ary[] = '!\[hide\=(?:[0-9]+):' . $uid . '\](.*?)\[/hide:' . $uid . '\]!s';
-			}
-			if($this->config['bb3hide_uhide'])
-			{
-				$hide_search_ary[] = '!\[uhide\=(?:[,0-9]+):' . $uid . '\](.*?)\[/uhide:' . $uid . '\]!s';
-			}
-			if($this->config['bb3hide_ghide'])
-			{
-				$hide_search_ary[] = '!\[ghide:' . $uid . '\](.*?)\[/ghide:' . $uid . '\]!s';
-			}
-			if($this->config['bb3hide_ghideplus'])
-			{
-				$hide_search_ary[] = '!\[ghide\=(?:[a-zA-Z0-9-+.,_ ]+):' . $uid . '\](.*?)\[/ghide:' . $uid . '\]!s';
-			}
-		}
+// 		}
 
 		$text = preg_replace($hide_search_ary, '<div class="bb3hide">$1</div>', $text);
 
@@ -297,7 +262,7 @@ class listener implements EventSubscriberInterface
 	{
 		$custom_tags=$event['custom_tags'];
 
-		if($custom_tags['BBCODE_TAG']=='hide')
+		if($custom_tags['BBCODE_TAG']=='hide=')
 		{
 			if($this->config['bb3hide_hideplus'])
 			{
@@ -311,7 +276,7 @@ class listener implements EventSubscriberInterface
 
 			$event['custom_tags']=$custom_tags;
 		}
-		else if($custom_tags['BBCODE_TAG']=='ghide')
+		else if($custom_tags['BBCODE_TAG']=='ghide=')
 		{
 			if($this->config['bb3hide_ghide'] && $this->config['bb3hide_ghideplus'])
 			{
@@ -337,85 +302,6 @@ class listener implements EventSubscriberInterface
 
 	}
 
-	public function bb3hide_cache_init($event)
-	{
-		$bbcode_cache=$event['bbcode_cache'];
-		$bbcode_uid=$event['bbcode_uid'];
-
-// 		if(!sizeof($this->posts_data))
-// 		{
-
-			foreach($bbcode_cache as $k => $v)
-			{
-				if(isset($v['preg']['!\[hide:$uid\](.*?)\[/hide:$uid\]!s']))
-				{
-					$bbcode_cache[$k]['preg']=array(
-						'!\[hide:$uid\](.*?)\[/hide:$uid\]!s' => '<div class="bb3hide">'.$this->user->lang['BB3HIDE_QUOTE_PREVIEW'].'</div>'
-					);
-				}
-				else if($this->config['bb3hide_hideplus'] && isset($v['preg']['!\[hide\=([0-9]+):$uid\](.*?)\[/hide:$uid\]!s']))
-				{
-					$bbcode_cache[$k]['preg']=array(
-						'!\[hide\=(?:[0-9]+):$uid\](.*?)\[/hide:$uid\]!s' => '<div class="bb3hide">'.$this->user->lang['BB3HIDE_QUOTE_PREVIEW'].'</div>'
-					);
-				}
-				else if($this->config['bb3hide_uhide'] && isset($v['preg']['!\[uhide\=([,0-9]+):$uid\](.*?)\[/uhide:$uid\]!s']))
-				{
-					$bbcode_cache[$k]['preg']=array(
-						'!\[uhide\=(?:[,0-9]+):$uid\](.*?)\[/uhide:$uid\]!s' => '<div class="bb3hide">'.$this->user->lang['BB3HIDE_QUOTE_PREVIEW'].'</div>'
-					);
-				}
-				else if($this->config['bb3hide_ghide'] && isset($v['preg']['!\[ghide:$uid\](.*?)\[/ghide:$uid\]!s']))
-				{
-					$bbcode_cache[$k]['preg']=array(
-						'!\[ghide:$uid\](.*?)\[/ghide:$uid\]!s' => '<div class="bb3hide">'.$this->user->lang['BB3HIDE_QUOTE_PREVIEW'].'</div>'
-					);
-				}
-				else if($this->config['bb3hide_ghideplus'] && isset($v['preg']['!\[ghide\=([a-zA-Z0-9-+.,_ ]+):$uid\](.*?)\[/ghide:$uid\]!s']))
-				{
-					$bbcode_cache[$k]['preg']=array(
-						'!\[ghide\=(?:[a-zA-Z0-9-+.,_ ]+):$uid\](.*?)\[/ghide:$uid\]!s' => '<div class="bb3hide">'.$this->user->lang['BB3HIDE_QUOTE_PREVIEW'].'</div>'
-					);
-				}
-			}
-// 		}
-// 		else
-// 		{
-// 			foreach($bbcode_cache as $k => $v)
-// 			{
-// 				if(isset($v['preg']['!\[hide:$uid\](.*?)\[/hide:$uid\]!s']))
-// 				{
-// 					$bbcode_cache[$k]['preg']=array(
-// 						'!\[hide:($uid)\](.*?)\[/hide:$uid\]!s' => '[hide : $1]$2[/hide : $1]'
-// 					);
-// 				}
-// 				else if($this->config['bb3hide_hideplus'] && isset($v['preg']['!\[hide\=([0-9]+):$uid\](.*?)\[/hide:$uid\]!s']))
-// 				{
-// 					$bbcode_cache[$k]['preg']=array(
-// 						'!\[hide\=([0-9]+):($uid)\](.*?)\[/hide:$uid\]!s' => '[hide=$1 : $2]$3[/hide : $2]'
-// 					);
-// 				}
-// 				else if($this->config['bb3hide_ghide'] && isset($v['preg']['!\[ghide:$uid\](.*?)\[/ghide:$uid\]!s']))
-// 				{
-// 					$bbcode_cache[$k]['preg']=array(
-// 						'!\[ghide:($uid)\](.*?)\[/ghide:$uid\]!s' => '[ghide : $1]$2[/ghide : $1]'
-// 					);
-// 				}
-// 				else if($this->config['bb3hide_ghideplus'] && isset($v['preg']['!\[ghide\=([a-zA-Z0-9-+.,_ ]+):$uid\](.*?)\[/ghide:$uid\]!s']))
-// 				{
-// 					$bbcode_cache[$k]['preg']=array(
-// 						'!\[ghide\=([a-zA-Z0-9-+.,_ ]+):($uid)\](.*?)\[/ghide:$uid\]!s' => '[ghide=$1 : $2]$3[/ghide : $2]'
-// 					);
-// 				}
-// 			}
-//
-// 		}
-
-		$event['bbcode_cache']=$bbcode_cache;
-
-	}
-
-
 	public function bb3hide_displaytext($event)
 	{
 		if(!sizeof($this->posts_data))
@@ -424,39 +310,36 @@ class listener implements EventSubscriberInterface
 		}
 
 		$uid=$event['uid'];
-		$bitfield=$event['bitfield'];
 
-		if(isset($this->posts_data[$bitfield][$uid]))
+		if(isset($this->posts_data[$uid]))
 		{
 			$text=$event['text'];
-
-			$poster_id=$this->posts_data[$bitfield][$uid][0];
-			$forum_id=$this->posts_data[$bitfield][$uid][1];
+			$poster_id=$this->posts_data[$uid][0];
+			$forum_id=$this->posts_data[$uid][1];
 
 			$hide_search_ary = array();
-			$hide_search_ary['hide'] = '!\[hide:$uid\](.*?)\[/hide:$uid\]!s';
+			$hide_search_ary['hide'] = '!<div class="adapthide" data-hide-name="hide" data-hide-value="">(.*?)</div>!s';
 			if($this->config['bb3hide_hideplus'])
 			{
-				$hide_search_ary['hide='] = '!\[hide\=([0-9]+):$uid\](.*?)\[/hide:$uid\]!s';
+				$hide_search_ary['hide='] = '!<div class="adapthide" data-hide-name="hide" data-hide-value="([0-9]+)">(.*?)</div>!s';
 			}
 			if($this->config['bb3hide_uhide'])
 			{
-				$hide_search_ary['uhide='] = '!\[uhide\=([,0-9]+):$uid\](.*?)\[/uhide:$uid\]!s';
+				$hide_search_ary['uhide='] = '!<div class="adapthide" data-hide-name="uhide" data-hide-value="([,0-9]+)">(.*?)</div>!s';
 			}
 			if($this->config['bb3hide_ghide'])
 			{
-				$hide_search_ary['ghide'] = '!\[ghide:$uid\](.*?)\[/ghide:$uid\]!s';
+				$hide_search_ary['ghide'] = '!<div class="adapthide" data-hide-name="ghide" data-hide-value="">(.*?)</div>!s';
 			}
 			if($this->config['bb3hide_ghideplus'])
 			{
-				$hide_search_ary['ghide='] = '!\[ghide\=([a-zA-Z0-9-+.,_ ]+):$uid\](.*?)\[/ghide:$uid\]!s';
+				$hide_search_ary['ghide='] = '!<div class="adapthide" data-hide-name="ghide" data-hide-value="([,0-9]+)">(.*?)</div>!s';
 			}
 
 			$hide_found=false;
 			foreach($hide_search_ary as $k=>$v)
 			{
-
-				$hide_search=str_replace('$uid', $uid, $v);
+				$hide_search=$v;
 				$preg=array();
 				preg_match_all($hide_search, $text, $preg);
 
@@ -465,12 +348,7 @@ class listener implements EventSubscriberInterface
 					foreach($preg[0] as $id=>$p)
 					{
 						$replaced=false;
-// 						if($this->is_admod)
-// 						{
-// 							$replaced=$hide_found=true;
-// 							$text = str_replace($p, '<div class="bb3hide">' . (isset($preg[2][$id]) ? $preg[2][$id] : $preg[1][$id]) . '</div>', $text);
-// 							continue;
-// 						}
+
 						if($k=='hide' && ($this->user->data['user_id'] == ANONYMOUS || $this->user->data['is_bot'] == 1))
 						{
 							$replaced=true;
@@ -518,10 +396,6 @@ class listener implements EventSubscriberInterface
 
 								$posts=$preg[1][$id];
 
-// 								if(!$ignore_limit)
-// 								{
-// 									$posts = min($posts, $this->posters_posts[$poster_id], ADAPT_HIDE_LIMIT_POSTS);
-// 								}
 								$hide_cause = false;
 								if($this->user->data['user_id'] == ANONYMOUS || $this->user->data['is_bot'] == 1)
 								{
