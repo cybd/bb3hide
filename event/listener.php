@@ -231,7 +231,6 @@ class listener implements EventSubscriberInterface
 			{
 				$hide_search_ary[] = '!\[ghide\=([a-zA-Z0-9-+.,_ ]+):' . $bbcode_uid . '\](.*?)\[/ghide:' . $bbcode_uid . '\]!s';
 			}
-			$message = preg_replace($hide_search_ary, $this->user->lang['BB3HIDE_QUOTE'], $message);
 
 			$event['message_text']=$message;
 
