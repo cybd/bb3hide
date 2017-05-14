@@ -23,7 +23,7 @@ class manage_bb3hide2 extends \phpbb\db\migration\migration
 {
 	public function effectively_installed()
 	{
-		return isset($this->config['bb3hide_version']) && version_compare($this->config['bb3hide_version'], '1.2.0', '>=');
+		return isset($this->config['bb3hide_version']) && version_compare($this->config['bb3hide_version'], '1.1.0', '>=');
 	}
 
 	static public function depends_on()
@@ -38,7 +38,7 @@ class manage_bb3hide2 extends \phpbb\db\migration\migration
 			// Add new config vars
 			array('config.add', array('bb3hide_uhide', '0')),
 
-			array('config.update', array('bb3hide_version', '1.2.0')),
+			array('config.update', array('bb3hide_version', '1.1.0')),
 
 		);
 	}
