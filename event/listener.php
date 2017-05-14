@@ -206,9 +206,9 @@ class listener implements EventSubscriberInterface
 	{
 		$mode=$this->request->variable('mode', '');
 		$action=$this->request->variable('action', '');
-		$preview=$this->request->variable('preview', '', true);
+		//$preview=$this->request->variable('preview', '', true);
 
-		if(!$preview && (in_array($mode, array('quote', 'reply')) || $action=='quotepost'))
+		if(/*!$preview && */(in_array($mode, array('quote', 'reply')) || $action=='quotepost'))
 		{
 			$bbcode_uid=$event['bbcode_uid'];
 			$message=$event['message_text'];
